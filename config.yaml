@@ -1,0 +1,51 @@
+# Cấu hình VideoDub — chỉ ghi các mục muốn đổi, còn lại lấy mặc định trong videodub/config.py
+source_lang: zh
+target_lang: vi
+source_text: ocr          # ocr: đọc hardsub | asr: nghe giọng (Whisper) khi video không có sub
+
+ocr:
+  fps: 1.5                # 1.5 fps: tốc độ quét tối ưu siêu tốc (nhanh gấp 2-3 lần)
+  max_width: 540          # 540px: độ rộng chuẩn giúp RapidOCR quét nhanh gần gấp đôi 720px
+  lock_band: true         # Tự động khóa dải phụ đề đối thoại (tăng tốc 5-10x)
+  lock_after: 3           # Số câu nhận diện ban đầu để khóa dải
+  band_diff_thresh: 14.0  # Ngưỡng phát hiện sub đổi trong dải (bỏ qua frame lặp)
+
+blur:
+  mode: box               # box: khung mờ ôm sát từng câu | band: dải ngang hết chiều rộng
+  cover_new_sub: true     # BẬT NÀY: nới khung cho vừa cả phụ đề Việt (tránh bị lộ mép chữ và sub cũ)
+  padding: 16             # lề quanh chữ (px) an toàn
+  fill: blur              # blur | box (hộp đen che kín)
+
+translate:
+  provider: gemini        # gemini: dịch theo ngữ cảnh (key trong secrets.yaml) | google: free, dịch sát chữ
+  gemini_model: gemini-3.8-flash
+  # Mô tả ngắn nội dung giúp Gemini dịch chuẩn hơn (có thể để trống, Gemini tự phân tích):
+  context: ""
+  # Tên riêng bắt buộc dịch theo ý bạn (tuỳ chọn):
+  # Áp dụng cho MỌI video → chỉ điền tên dùng chung. Tên riêng từng video Gemini tự phân tích (output/<tên>.glossary.json)
+  glossary: {}
+  #  俺老孙: Lão Tôn
+  #  孙大圣: Tôn Đại Thánh
+
+tts:
+  provider: edge          # edge: đám mây Microsoft AI (~35-45s, siêu tốc) | supertonic: AI offline CPU (~24 phút)
+  fallback: edge          # câu nào lỗi thì dùng Edge
+  multi_voice: true       # mỗi nhân vật 1 giọng theo giới tính (cần dịch lại bằng Gemini để có thông tin người nói)
+  speaker_voices: {}      # gán tay, vd: {"Tôn Ngộ Không": "M2", "Hệ thống": "F3"}
+  supertonic:
+    voice: F1             # giọng mặc định (M1–M5 nam, F1–F5 nữ)
+    speed: 1.65            # đã chọn qua calibrate_voice.py (1.6–1.7 nghe tự nhiên)
+
+original_audio:
+  mode: duck              # duck: vặn nhỏ giọng gốc | remove_voice: tách giọng giữ nhạc nền (cần demucs) | mute
+  volume: 0.15
+
+subtitle:
+  font_file: fonts/BeVietnamPro-Bold.ttf
+  font_name: Be Vietnam Pro
+
+output:
+  hardware_accel: auto        # auto: tự động phát hiện GPU Intel Iris Xe (h264_qsv) / NVIDIA (h264_nvenc) tăng tốc xuất video
+  preset: veryfast
+  crf: 20
+

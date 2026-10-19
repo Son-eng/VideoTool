@@ -1,0 +1,29 @@
+# Khoa bi mat & Thong tin ca nhan (RAT QUAN TRONG)
+secrets.yaml
+*cookies*.txt
+temp_*
+scratch/
+video_contexts.txt
+
+# Moi truong ao & Cache Python
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Binaries lon (FFmpeg se duoc tai tu dong hoac co trong zip)
+bin/
+input/*
+!input/.gitkeep
+output/*
+!output/.gitkeep
+
+# IDE & He dieu hanh
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+.DS_Store

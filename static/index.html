@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoDub AI Studio — Tự Động Vietsub, Sub Tiếng Anh & Lồng Tiếng Video</title>
+    <meta name="description" content="Công cụ tự động làm mờ sub gốc, dịch tiếng Việt / tiếng Anh, lồng tiếng đa giọng và gắn logo cho video ngắn Douyin, TikTok, Shorts.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <!-- Header Navigation -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-logo-glow">
+                    <span class="brand-icon">⚡</span>
+                </div>
+                <div class="brand-info">
+                    <h1 class="brand-title">VideoDub <span class="gradient-text">Studio AI</span></h1>
+                    <p class="brand-subtitle">Automated Chinese Video Localization & Dubbing Engine</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Hệ Thống Sẵn Sàng</span>
+                </div>
+                <button id="btnOpenKeyModal" class="btn-ghost">
+                    <span class="icon">🔑</span>
+                    <span id="keyBtnText">Gemini API Key</span>
+                </button>
+                <button id="btnPreviewLatest" class="btn-ghost" title="Xem lại video đã xuất gần nhất">
+                    <span class="icon">🎬</span> Xem Video Vừa Xuất
+                </button>
+                <button id="btnOpenFolderHeader" class="btn-ghost">
+                    <span class="icon">📂</span> Thư mục Output
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-layout">
+        <!-- Section 1: Video Input (Link / Upload) -->
+        <section class="glass-card input-section">
+            <div class="section-header">
+                <div class="badge-tag">BƯỚC 1</div>
+                <h2 class="section-title">Chọn Nguồn Video Đầu Vào</h2>
+                <p class="section-desc">Dán link video Douyin, TikTok, YouTube Shorts hoặc tải file trực tiếp từ máy tính</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="tab-switcher">
+                <button class="tab-btn active" data-tab="linkTab">
+                    <span class="tab-icon">🔗</span> Gắn Link Video (Douyin, TikTok, Shorts)
+                </button>
+                <button class="tab-btn" data-tab="uploadTab">
+                    <span class="tab-icon">📁</span> Kéo Thả File Từ Máy Tính
+                </button>
+            </div>
+
+            <!-- Tab 1: Link Download -->
+            <div id="linkTab" class="tab-content active">
+                <div class="url-input-group">
+                    <div class="input-icon-wrapper">
+                        <span class="url-icon">🌐</span>
+                        <input type="text" id="videoUrlInput" class="custom-input" placeholder="Dán liên kết video (ví dụ: https://v.douyin.com/... hoặc https://www.tiktok.com/@...)" />
+                        <button id="btnPasteUrl" class="btn-icon-inside" title="Dán từ Clipboard">📋 Dán</button>
+                    </div>
+                    <button id="btnDownloadUrl" class="btn-primary-action">
+                        <span class="btn-icon">⚡</span> Tải & Nạp Video
+                    </button>
+                </div>
+                <div class="platform-support-hints">
+                    <span>Hỗ trợ tự động:</span>
+                    <span class="platform-badge">🎵 Douyin</span>
+                    <span class="platform-badge">📱 TikTok</span>
+                    <span class="platform-badge">▶️ YouTube Shorts</span>
+                    <span class="platform-badge">⚡ Kuaishou</span>
+                    <span class="platform-badge">📘 Facebook Reels</span>
+                </div>
+                <p class="url-hint-text">
+                    💡 <em>Hệ thống đã tự động hỗ trợ cả link xem trên web (<code>modal_id</code>) và link chia sẻ từ app. Với video Douyin, nếu gặp cảnh báo bảo mật yêu cầu cookie của ByteDance, bạn có thể tải video về máy rồi kéo thả vào tab <strong>"Kéo Thả File"</strong> để xử lý ngay, hoặc bỏ file <code>cookies.txt</code> vào thư mục VideoDub.</em>
+                </p>
+            </div>
+
+            <!-- Tab 2: Upload File -->
+            <div id="uploadTab" class="tab-content">
+                <div id="dropZone" class="drop-zone">
+                    <input type="file" id="fileInput" accept="video/mp4,video/mov,video/mkv,video/webm,video/avi" hidden />
+                    <div class="drop-zone-icon">📥</div>
+                    <p class="drop-zone-title">Kéo thả file video vào đây hoặc <span>bấm để chọn</span></p>
+                    <p class="drop-zone-sub">Định dạng hỗ trợ: MP4, MOV, MKV, WEBM, AVI (không giới hạn kích thước)</p>
+                </div>
+            </div>
+
+            <!-- Selected Video Banner -->
+            <div id="selectedVideoBanner" class="selected-video-banner hidden">
+                <div class="video-info-preview">
+                    <div class="video-badge-type">VIDEO ĐÃ NẠP</div>
+                    <div class="video-details">
+                        <h4 id="loadedVideoTitle" class="video-title">video.mp4</h4>
+                        <p id="loadedVideoMeta" class="video-meta">Đường dẫn: input/video.mp4</p>
+                    </div>
+                </div>
+                <button id="btnClearVideo" class="btn-danger-outline">✕ Đổi video</button>
+            </div>
+        </section>
+
+        <!-- Section 2: Studio Options Grid -->
+        <section class="options-grid">
+            <!-- Card A: Ngôn ngữ & Chế độ -->
+            <div class="glass-card option-card">
+                <div class="card-header">
+                    <span class="card-icon">🌐</span>
+                    <h3 class="card-title">Ngôn Ngữ & Kiểu Xử Lý</h3>
+                </div>
+
+                <!-- Target Language -->
+                <div class="form-group">
+                    <label class="form-label">Dịch Phụ Đề Sang:</label>
+                    <div class="pill-selector" id="targetLangSelector">
+                        <button class="pill-btn active" data-lang="vi">
+                            <span class="flag">🇻🇳</span> Tiếng Việt
+                        </button>
+                        <button class="pill-btn" data-lang="en">
+                            <span class="flag">🇺🇸</span> Tiếng Anh (English)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Processing Mode -->
+                <div class="form-group">
+                    <label class="form-label">Chế Độ Xuất Video:</label>
+                    <div class="radio-cards-grid" id="modeSelector">
+                        <div class="radio-card active" data-mode="vietsub">
+                            <div class="radio-card-header">
+                                <span class="radio-indicator"></span>
+                                <span class="radio-title">📝 Chỉ Làm Sub</span>
+                            </div>
+                            <p class="radio-desc">Giữ 100% âm thanh gốc, dịch & chèn phụ đề</p>
+                        </div>
+                        <div class="radio-card" data-mode="dubbing">
+                            <div class="radio-card-header">
+                                <span class="radio-indicator"></span>
+                                <span class="radio-title">🎙️ Chỉ Lồng Tiếng</span>
+                            </div>
+                            <p class="radio-desc">Lồng tiếng AI đa giọng, không chèn chữ phụ đề</p>
+                        </div>
+                        <div class="radio-card" data-mode="both">
+                            <div class="radio-card-header">
+                                <span class="radio-indicator"></span>
+                                <span class="radio-title">⚡ Cả Hai (Sub + Voice)</span>
+                            </div>
+                            <p class="radio-desc">Vừa chèn phụ đề vừa lồng tiếng AI hoàn chỉnh</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Context & Topic (Gemini AI Context) -->
+                <div class="form-group" style="margin-top: 18px;">
+                    <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>💡 Chủ Đề & Ngữ Cảnh Video (Tự động nạp):</span>
+                        <span style="font-size: 11px; color: var(--text-muted); font-weight: 400;">Gemini tối ưu xưng hô & phong cách</span>
+                    </label>
+                    <input type="text" id="videoContextInput" class="custom-input"
+                           placeholder="Ví dụ: Phim ngắn hài hước / Giới thiệu công nghệ AI / Review sản phẩm..." />
+                    <div class="context-chips" id="contextChips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+                        <button type="button" class="chip-btn" data-tag="🎬 Phim ngắn / Hài kịch">🎬 Phim ngắn</button>
+                        <button type="button" class="chip-btn" data-tag="🤖 Công nghệ / AI / Hướng dẫn">🤖 Công nghệ</button>
+                        <button type="button" class="chip-btn" data-tag="🛍️ Review / Bán hàng">🛍️ Bán hàng</button>
+                        <button type="button" class="chip-btn" data-tag="📰 Tin tức / Đời sống">📰 Tin tức</button>
+                        <button type="button" class="chip-btn" data-tag="🥋 Cổ trang / Kiếm hiệp">🥋 Cổ trang</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card B: Xử lý Sub Gốc & Che Sub -->
+            <div class="glass-card option-card">
+                <div class="card-header">
+                    <span class="card-icon">🛡️</span>
+                    <h3 class="card-title">Xử Lý Phụ Đề Gốc</h3>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phương Thức Trích Xuất Phụ Đề Gốc:</label>
+                    <div class="radio-cards-grid" id="sourceTextSelector">
+                        <div class="radio-card active" data-source="ocr">
+                            <div class="radio-card-header">
+                                <span class="radio-indicator"></span>
+                                <span class="radio-title">👁️ Quét Hardsub (OCR)</span>
+                            </div>
+                            <p class="radio-desc">Đọc chữ trên màn hình (Douyin/TikTok có sub, che sub cũ chuẩn)</p>
+                        </div>
+                        <div class="radio-card" data-source="asr">
+                            <div class="radio-card-header">
+                                <span class="radio-indicator"></span>
+                                <span class="radio-title">🎙️ Nghe Giọng Nói (Whisper AI)</span>
+                            </div>
+                            <p class="radio-desc">Nghe audio tự sinh timeline (YouTube/Podcast/Video không có sub)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Whisper Settings (hiện khi chọn Whisper AI) -->
+                <div class="form-group hidden" id="whisperOptionsWrapper">
+                    <label class="form-label">Mô Hình Whisper AI:</label>
+                    <select id="whisperModelSelect" class="custom-select">
+                        <option value="small" selected>⚡ Whisper Small (Cân bằng tốc độ & độ chuẩn tiếng Trung, khuyên dùng)</option>
+                        <option value="base">🚀 Whisper Base (Siêu nhanh • Phù hợp video giọng rõ)</option>
+                        <option value="medium">🎯 Whisper Medium (Độ chính xác cao hơn, cần nhiều RAM)</option>
+                        <option value="openai">💎 OpenAI Whisper API (Đám mây siêu tốc ~5s, tốn ~$0.03/video)</option>
+                    </select>
+                </div>
+
+                <!-- OCR Settings (hiện khi chọn Quét Hardsub OCR) -->
+                <div id="ocrOptionsWrapper">
+                    <div class="form-group">
+                        <label class="form-label">Vùng Quét Nhận Diện Sub Gốc (OCR):</label>
+                        <select id="ocrRegionSelect" class="custom-select">
+                            <option value="auto" selected>🎯 Tự Động Thông Minh (AI Auto - Lọc sạch slide & chữ rác)</option>
+                            <option value="bottom_tight">🔽 Sát Đáy Màn Hình (78% - 100% • Video slide / 16:9)</option>
+                            <option value="bottom_standard">📐 Nửa Dưới Tiêu Chuẩn (60% - 100%)</option>
+                            <option value="bottom_wide">📏 Quét Rộng Nửa Dưới (45% - 100% • Cho video dọc sub ở giữa)</option>
+                            <option value="full">🌐 Toàn Khung Hình (0% - 100%)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tốc Độ Xử Lý & Quét Sub (OCR):</label>
+                        <select id="ocrFpsSelect" class="custom-select">
+                            <option value="1.5" selected>⚡ Siêu Tốc (1.5 fps • Tăng tốc 2-3x, khuyên dùng)</option>
+                            <option value="2.0">🎯 Tiêu Chuẩn (2.0 fps • Quét từng 0.5s)</option>
+                            <option value="1.0">🚀 Cực Nhanh (1.0 fps • Cho video clip dài)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tùy Chọn Che Phụ Đề Cũ:</label>
+                    <div class="radio-cards-grid" id="blurOldSubSelector">
+                        <div class="radio-card active" data-blur="true">
+                            <div class="radio-card-header">
+                                <span class="radio-indicator"></span>
+                                <span class="radio-title">🛡️ Làm Mờ Sub Gốc (Khuyên dùng)</span>
+                            </div>
+                            <p class="radio-desc">Sub mới hiển thị đè lên đúng dải đã làm mờ</p>
+                        </div>
+                        <div class="radio-card" data-blur="false">
+                            <div class="radio-card-header">
+                                <span class="radio-indicator"></span>
+                                <span class="radio-title">👁️ Để Nguyên Sub Gốc</span>
+                            </div>
+                            <p class="radio-desc">Không làm mờ, sub mới đặt BÊN DƯỚI sub gốc</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="blurModeWrapper" class="form-group">
+                    <label class="form-label">Kiểu Khung Mờ Sub Cũ:</label>
+                    <select id="blurModeSelect" class="custom-select">
+                        <option value="box" selected>Khung chữ tự động (Box - Ôm khít từng câu)</option>
+                        <option value="band">Dải ngang che kín (Band - Phong cách Douyin/TikTok sạch 100%)</option>
+                    </select>
+                </div>
+
+                <div id="blurPaddingWrapper" class="form-group">
+                    <label class="form-label">Độ Rộng Viền Che Sub:</label>
+                    <select id="blurPaddingSelect" class="custom-select">
+                        <option value="16" selected>Vừa vặn tiêu chuẩn (16px - Khuyên dùng)</option>
+                        <option value="24">Rộng an toàn (24px - Che kín mép)</option>
+                        <option value="32">Cực dày (32px - Che triệt để sub to)</option>
+                        <option value="10">Ôm sát gọn gàng (10px)</option>
+                    </select>
+                </div>
+
+                <!-- TTS Engine selection -->
+                <div class="form-group" id="ttsEngineWrapper">
+                    <label class="form-label">Động Cơ Giọng Lồng Tiếng:</label>
+                    <select id="ttsProviderSelect" class="custom-select">
+                        <option value="edge" selected>⚡ Edge-TTS AI (Miễn phí • Đám mây Microsoft ~35-45s)</option>
+                        <option value="openai">💎 OpenAI TTS API (Trả phí ~$0.04/video • Siêu tốc ~15s, cực tự nhiên)</option>
+                        <option value="supertonic">🐢 Supertonic 3 (Miễn phí • Chạy offline trên CPU ~24 phút)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Card C: Xóa Logo Gốc & Dán Logo Thương Hiệu -->
+            <div class="glass-card option-card full-width-card">
+                <div class="card-header">
+                    <span class="card-icon">🎨</span>
+                    <h3 class="card-title">Xử Lý Logo & Nhận Diện Thương Hiệu</h3>
+                </div>
+
+                <div class="logo-features-layout">
+                    <!-- Feature 1: Logo Remove -->
+                    <div class="logo-sub-panel">
+                        <div class="switch-header">
+                            <label class="switch">
+                                <input type="checkbox" id="chkRemoveLogo">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="switch-title">Che Logo / Watermark Video Gốc</span>
+                        </div>
+                        <p class="switch-desc">Tự động nhận diện và làm mờ logo Douyin/TikTok ở góc video</p>
+
+                        <div id="removeLogoOptions" class="nested-options disabled">
+                            <div class="form-row">
+                                <label>Vị Trí Logo Gốc:</label>
+                                <select id="selRemoveLogoPos" class="custom-select">
+                                    <option value="top_left" selected>Góc Trên - Trái (Logo Douyin/TikTok)</option>
+                                    <option value="top_right">Góc Trên - Phải</option>
+                                    <option value="bottom_left">Góc Dưới - Trái</option>
+                                    <option value="bottom_right">Góc Dưới - Phải</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2: Brand Logo Overlay -->
+                    <div class="logo-sub-panel">
+                        <div class="switch-header">
+                            <label class="switch">
+                                <input type="checkbox" id="chkBrandLogo">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="switch-title">Dán Logo Thương Hiệu Riêng</span>
+                        </div>
+                        <p class="switch-desc">Dán logo shop / kênh affiliate vào 1 trong 4 góc video</p>
+
+                        <div id="brandLogoOptions" class="nested-options disabled">
+                            <div class="form-row">
+                                <label>Chọn File Ảnh Logo:</label>
+                                <div class="file-picker-row">
+                                    <input type="file" id="brandLogoInput" accept="image/png,image/jpeg,image/webp" hidden>
+                                    <button id="btnChooseBrandLogo" class="btn-secondary-sm">📁 Chọn ảnh (PNG/JPG)</button>
+                                    <span id="lblBrandLogoName" class="file-name-hint">Chưa chọn ảnh</span>
+                                </div>
+                            </div>
+
+                            <div class="form-row-multi">
+                                <div class="form-col">
+                                    <label>Góc Đặt Logo:</label>
+                                    <select id="selBrandLogoCorner" class="custom-select">
+                                        <option value="top_right" selected>Góc Trên - Phải</option>
+                                        <option value="top_left">Góc Trên - Trái</option>
+                                        <option value="bottom_right">Góc Dưới - Phải</option>
+                                        <option value="bottom_left">Góc Dưới - Trái</option>
+                                    </select>
+                                </div>
+                                <div class="form-col">
+                                    <label>Chiều Rộng Logo (px):</label>
+                                    <input type="number" id="txtBrandLogoWidth" class="custom-input-sm" value="120" min="40" max="600" step="5">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Start Button -->
+        <section class="action-section">
+            <button id="btnStartExport" class="btn-giant-glow">
+                <span class="btn-giant-icon">🚀</span>
+                <span class="btn-giant-text">BẮT ĐẦU XUẤT VIDEO NGAY</span>
+                <span class="btn-shimmer"></span>
+            </button>
+        </section>
+
+        <!-- Section 4: Circular Step Progress Tracker -->
+        <section class="glass-card tracker-section" id="trackerSection">
+            <div class="tracker-header">
+                <div class="tracker-header-left">
+                    <h3 class="tracker-title">Tiến Trình Xử Lý Video</h3>
+                    <p id="trackerStatusMsg" class="tracker-status-text">Đang sẵn sàng nhận lệnh...</p>
+                </div>
+                <div class="tracker-percent-badge">
+                    <span id="trackerPercent">0%</span>
+                </div>
+            </div>
+
+            <!-- Circular Steps Layout (6 ô tròn theo yêu cầu) -->
+            <div class="circular-steps-container">
+                <div class="step-line-bg">
+                    <div id="stepLineProgress" class="step-line-fill"></div>
+                </div>
+
+                <!-- Step 0: Nhận video -->
+                <div class="step-node step-pending" data-step="0">
+                    <div class="circle-indicator">
+                        <span class="step-icon">📥</span>
+                        <span class="check-icon">✓</span>
+                    </div>
+                    <span class="step-label">1. Tải Video</span>
+                </div>
+
+                <!-- Step 1: Quét Sub OCR -->
+                <div class="step-node step-pending" data-step="1">
+                    <div class="circle-indicator">
+                        <span class="step-icon">👁️</span>
+                        <span class="check-icon">✓</span>
+                    </div>
+                    <span class="step-label">2. Quét Sub (OCR)</span>
+                </div>
+
+                <!-- Step 2: Dịch AI -->
+                <div class="step-node step-pending" data-step="2">
+                    <div class="circle-indicator">
+                        <span class="step-icon">🌐</span>
+                        <span class="check-icon">✓</span>
+                    </div>
+                    <span class="step-label">3. Dịch Thuật AI</span>
+                </div>
+
+                <!-- Step 3: Lồng tiếng TTS -->
+                <div class="step-node step-pending" data-step="3">
+                    <div class="circle-indicator">
+                        <span class="step-icon">🎙️</span>
+                        <span class="check-icon">✓</span>
+                    </div>
+                    <span class="step-label">4. Lồng Tiếng</span>
+                </div>
+
+                <!-- Step 4: Xử lý Logo & Mờ -->
+                <div class="step-node step-pending" data-step="4">
+                    <div class="circle-indicator">
+                        <span class="step-icon">🎨</span>
+                        <span class="check-icon">✓</span>
+                    </div>
+                    <span class="step-label">5. Logo & Mờ</span>
+                </div>
+
+                <!-- Step 5: Kết xuất MP4 -->
+                <div class="step-node step-pending" data-step="5">
+                    <div class="circle-indicator">
+                        <span class="step-icon">🎬</span>
+                        <span class="check-icon">✓</span>
+                    </div>
+                    <span class="step-label">6. Xuất Video</span>
+                </div>
+            </div>
+
+            <!-- Live Terminal / Console Box (Bên dưới thanh tiến trình) -->
+            <div class="live-terminal-wrapper">
+                <div class="terminal-bar">
+                    <div class="terminal-dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <span class="terminal-title">live console output (real-time stream)</span>
+                    <button id="btnClearLog" class="btn-terminal-clear">Xóa log</button>
+                </div>
+                <div id="terminalBody" class="terminal-body">
+                    <p class="term-line prompt">> Hệ thống VideoDub Studio đã sẵn sàng...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Completion Modal Popup (POPUP NỔI GIỮA MÀN HÌNH THEO YÊU CẦU) -->
+    <div id="resultModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <button id="btnCloseModal" class="btn-modal-close" title="Đóng">✕</button>
+            <div class="modal-badge-glow">🎉 HOÀN THÀNH XUẤT SẮC!</div>
+            <h3 id="modalVideoTitle" class="modal-title">Video Của Bạn Đã Sẵn Sàng</h3>
+            <p id="modalVideoMeta" class="modal-subtitle">Hoàn tất trong 15.2s • MP4 1080p</p>
+
+            <!-- Embedded Video Player -->
+            <div class="modal-video-container">
+                <video id="resultVideoPlayer" controls playsinline preload="auto"></video>
+                <div id="videoUnmuteHint" class="video-unmute-hint hidden">
+                    <span class="unmute-icon">🔊</span>
+                    <span>Đang tắt tiếng (Bấm vào video để bật âm thanh)</span>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="modal-actions-grid">
+                <a id="btnDownloadVideo" href="#" download class="btn-modal-primary">
+                    <span class="btn-icon">📥</span> Tải Video MP4 Về Máy
+                </a>
+                <a id="btnDownloadSrt" href="#" download class="btn-modal-secondary">
+                    <span class="btn-icon">📄</span> Tải Phụ Đề (.SRT)
+                </a>
+                <button id="btnOpenOutputFolder" class="btn-modal-secondary">
+                    <span class="btn-icon">📂</span> Mở Thư Mục Chứa
+                </button>
+                <button id="btnProcessAnother" class="btn-modal-ghost">
+                    <span class="btn-icon">🔄</span> Làm Video Tiếp Theo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gemini API Key Settings Modal -->
+    <div id="keyModal" class="modal-backdrop hidden">
+        <div class="modal-card modal-card-sm">
+            <button id="btnCloseKeyModal" class="btn-modal-close" title="Đóng">✕</button>
+            <div class="modal-icon-header">🔑</div>
+            <h3 class="modal-title">Cấu Hình Gemini API Key</h3>
+            <p class="modal-subtitle">Dùng để phân tích kịch bản theo ngữ cảnh phim và dịch chuẩn xác</p>
+
+            <div class="form-group-modal">
+                <label>Gemini API Key (Google AI Studio):</label>
+                <input type="password" id="inputApiKeyModal" class="custom-input" placeholder="AIzaSy..." />
+            </div>
+
+            <div class="key-modal-actions">
+                <button id="btnSaveKeyModal" class="btn-primary-action">Lưu API Key</button>
+                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="btn-ghost-sm">
+                    Lấy Key Miễn Phí ↗
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="toast hidden"></div>
+
+    <script src="/static/app.js?v=2.2"></script>
+</body>
+</html>

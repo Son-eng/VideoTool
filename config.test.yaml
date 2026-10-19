@@ -1,0 +1,7 @@
+# Cấu hình test offline (không cần internet)
+translate:
+  provider: mock
+tts:
+  provider: espeak
+output:
+  keep_temp: true
